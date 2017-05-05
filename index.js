@@ -128,6 +128,17 @@ module.exports = function jfSync(functions, cb)
     {
         cb = () => {};
     }
-    normalize(functions);
-    next(functions, cb);
+    if (typeof functions === 'function')
+    {
+        functions = [ functions ];
+    }
+    if (Array.isArray(functions))
+    {
+        normalize(functions);
+        next(functions, cb);
+    }
+    else
+    {
+        throw new TypeError('Functions list expected');
+    }
 };

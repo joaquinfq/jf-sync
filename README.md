@@ -113,3 +113,143 @@ jfSync(
     (error, data) => console.log(error.index, data.slice(0, error.index)) // 1 [ 'a' ]
 );
 ```
+
+### Nested jfSync
+
+Next, a more complicated example: a decorator system.
+
+Each decorator will modify an object using two methods:
+
+- `before`: Executed before calling object method.
+- `after` : Executed after calling object method.
+
+Each decoration process can be asynchronous, so values added to decorated object 
+can be read from DB, web, etc., and call `cb(error, data)` in right moment.
+
+```js
+const jfSync = require('jf-sync');
+//------------------------------------------------------------------------------
+// Decorator classes.
+//------------------------------------------------------------------------------
+class DecoratorBase
+{
+    // This method must be abstract and implemented in child class
+    after(obj, cb)
+    {
+        const _name = this.constructor.name;
+        obj.after.push(_name);
+        cb(null, [this.constructor.name, 'after']);
+    }
+
+    // This method must be abstract and implemented in child class
+    before(obj, cb)
+    {
+        const _name = this.constructor.name;
+        obj.before.push(_name);
+        cb(null, [this.constructor.name, 'before']);
+    }
+}
+class DecoratorOne extends DecoratorBase {}
+class DecoratorTwo extends DecoratorBase {}
+//------------------------------------------------------------------------------
+// Class to decorate.
+//------------------------------------------------------------------------------
+class NeedDecoration
+{
+    constructor()
+    {
+        this.after  = [];
+        this.before = [];
+    }
+
+    method(cb)
+    {
+        cb(null, 'NeedDecoration: between after and before');
+    }
+}
+//------------------------------------------------------------------------------
+// Add a new decorator to list.
+//------------------------------------------------------------------------------
+function addDecorator(Decorator, obj)
+{
+    const _decorator = new Decorator();
+    after.push(
+        {
+            args  : obj,
+            fn    : _decorator.after,
+            scope : _decorator
+        }
+    );
+    before.push(
+        {
+            args  : obj,
+            fn    : _decorator.before,
+            scope : _decorator
+        }
+    );
+}
+//------------------------------------------------------------------------------
+// Decorate object.
+//------------------------------------------------------------------------------
+// Object to decorate.
+const decorated = new NeedDecoration();
+// Functions to call after decoration.
+const after  = [];
+// Functions to call before decoration.
+const before = [];
+// Add all decorators required.
+addDecorator(DecoratorOne, decorated);
+addDecorator(DecoratorTwo, decorated);
+// Sync decoration process.
+jfSync(
+    [
+        cb => jfSync(before, cb),
+        cb => jfSync(
+            [
+                {
+                    fn    : decorated.method,
+                    scope : decorated
+                }
+            ],
+            cb
+        ),
+        cb => jfSync(after, cb)
+    ],
+    (error, data) =>
+    {
+        console.log('ERROR: ', error);
+        console.log('DATA : ', data);
+        console.log('OBJ  : ', decorated);
+    }
+);
+```
+Output after script execution:
+
+```
+ERROR:  null
+DATA :  [
+    [
+        [ 'DecoratorOne', 'before' ],
+        [ 'DecoratorTwo', 'before' ]
+    ],
+    [
+        'NeedDecoration: between after and before' 
+    ],
+    [
+        [ 'DecoratorOne', 'after' ],
+        [ 'DecoratorTwo', 'after' ]
+    ]
+]
+OBJ  :  NeedDecoration {
+  after  : [ 'DecoratorOne', 'DecoratorTwo' ],
+  before : [ 'DecoratorOne', 'DecoratorTwo' ]
+}
+```
+
+As you can see, each decorator was executed in a synchronous way and
+modified object in expected order.
+
+Remember, `data` will have results of each method executed instead of
+original functions.
+
+You can use this example and change some parts for testing errors.

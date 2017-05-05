@@ -1,9 +1,9 @@
 {
-    "version"     : "0.1.0",
-    "name"        : "jf-sync",
-    "author"      : "Joaquín Fernández",
-    "description" : "Synchronize asynchronous functions",
-    "keywords"    : [
+    "version": "0.1.1",
+    "name": "jf-sync",
+    "author": "Joaquín Fernández",
+    "description": "Synchronize asynchronous functions",
+    "keywords": [
         "async",
         "asynchronous",
         "callback",
@@ -14,13 +14,13 @@
         "synchronous",
         "wait"
     ],
-    "license"     : "MIT",
-    "homepage"    : "http://www.joaquinfernandez.net",
-    "repository"  : {
-        "type" : "git",
-        "url"  : "https://github.com/joaquinfq/jf-sync"
+    "license": "MIT",
+    "homepage": "http://www.joaquinfernandez.net",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/joaquinfq/jf-sync"
     },
-    "scripts"     : {
-        "test" : "node test"
+    "scripts": {
+        "test": "node test"
     }
 }
